@@ -1,319 +1,412 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Multimedia Search Engine</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
     <!-- Navigation -->
     <nav class="navbar">
-        <div class="nav-container">
-            <a href="#" class="logo">ImageSearch</a>
-            <ul class="nav-links">
-                <li><a href="{{ url_for('main.index') }}">Dashboard</a></li>
-                <li><a href="{{ url_for('main.results') }}">Results</a></li>
-            </ul>
-            <div class="user-menu">
-                <span>Welcome, {{ session.get('username', 'User') }}</span>
-                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a>
-            </div>
+      <div class="nav-container">
+        <a href="#" class="logo">ImageSearch</a>
+        <ul class="nav-links">
+          <li><a href="{{ url_for('main.index') }}">Dashboard</a></li>
+          <li><a href="{{ url_for('main.results') }}">Results</a></li>
+        </ul>
+        <div class="user-menu">
+          <span>Welcome, {{ session.get('username', 'User') }}</span>
+          <a href="{{ url_for('auth.logout') }}" class="btn btn-outline"
+            >Logout</a
+          >
         </div>
+      </div>
     </nav>
 
     <!-- Main Container -->
     <div class="main-container">
-        <!-- Developer Info Card -->
-        <div class="card">
+      <!-- Developer Info Card -->
+      <div class="card">
+        <div class="card-header">
+          <h1 class="card-title">
+            Multimedia Search Engine with CNN & Vision Transformers
+          </h1>
+          <p class="card-subtitle">
+            Advanced image similarity search using deep learning descriptors
+          </p>
+        </div>
+        <div class="developer-info">
+          <p>
+            <strong>Project:</strong> Multimedia Indexing/Search with CNN and
+            Vision Transformers
+          </p>
+          <p>
+            <strong>Description:</strong> This application provides
+            state-of-the-art image similarity search using multiple deep
+            learning models including MobileNet, ResNet50, and Vision
+            Transformers (ViT_16). Upload a query image to find the most similar
+            images from our indexed database.
+          </p>
+        </div>
+      </div>
+
+      <!-- Search Configuration -->
+      <div class="card">
+        <div class="card-header">
+          <h2 class="card-title">Search Configuration</h2>
+          <p class="card-subtitle">Configure your search parameters</p>
+        </div>
+
+        <form
+          action="{{ url_for('main.search') }}"
+          method="POST"
+          enctype="multipart/form-data"
+        >
+          <!-- Model Selection -->
+          <div class="form-group">
+            <label class="form-label">Select Models (Choose up to 4)</label>
+            <div class="model-grid">
+              <div class="model-card" data-model="mobilenet">
+                <div class="model-name">MobileNet</div>
+                <div class="model-description">
+                  Lightweight CNN for mobile devices
+                </div>
+                <input
+                  type="checkbox"
+                  name="models"
+                  value="mobilenet"
+                  style="display: none"
+                />
+              </div>
+              <div class="model-card" data-model="resnet50">
+                <div class="model-name">ResNet50</div>
+                <div class="model-description">
+                  Deep residual network with 50 layers
+                </div>
+                <input
+                  type="checkbox"
+                  name="models"
+                  value="resnet50"
+                  style="display: none"
+                />
+              </div>
+              <div class="model-card" data-model="vit_16">
+                <div class="model-name">ViT-16</div>
+                <div class="model-description">
+                  Vision Transformer with 16x16 patches
+                </div>
+                <input
+                  type="checkbox"
+                  name="models"
+                  value="vit_16"
+                  style="display: none"
+                />
+              </div>
+              <div class="model-card" data-model="vgg16">
+                <div class="model-name">VGG16</div>
+                <div class="model-description">
+                  Classic CNN architecture with 16 layers
+                </div>
+                <input
+                  type="checkbox"
+                  name="models"
+                  value="vgg16"
+                  style="display: none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Similarity Method -->
+          <div class="form-group">
+            <label for="similarity_method" class="form-label"
+              >Similarity Calculation Method</label
+            >
+            <select
+              name="similarity_method"
+              id="similarity_method"
+              class="form-select"
+            >
+              <option value="euclidean">Euclidean Distance</option>
+              <option value="chi2">Chi-square</option>
+              <option value="bhatta">Bhattacharyya</option>
+            </select>
+          </div>
+
+          <!-- Results Count -->
+          <div class="form-group">
+            <label for="results_count" class="form-label"
+              >Number of Results</label
+            >
+            <select name="results_count" id="results_count" class="form-select">
+              <option value="20">Top 20</option>
+              <option value="50">Top 50</option>
+            </select>
+          </div>
+
+          <!-- File Upload -->
+          <div class="form-group">
+            <label class="form-label">Chose Query Image (from 0 to 999)</label>
+            <input
+              type="number"
+              id="queryImage"
+              name="query_image"
+              class="form-input"
+              placeholder="Enter your image number"
+              required
+            />
+            <div id="filePreview" class="mt-2 hidden">
+              <img
+                id="previewImage"
+                style="
+                  max-width: 200px;
+                  max-height: 200px;
+                  border-radius: 0.5rem;
+                "
+              />
+              <p id="fileName" class="mt-1"></p>
+            </div>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" class="btn btn-primary" style="width: 100%">
+            Search Similar Images
+          </button>
+        </form>
+      </div>
+
+      <!-- Loading Indicator -->
+      <div class="loading" id="loadingIndicator">
+        <div class="spinner"></div>
+        <p>Processing your query...</p>
+      </div>
+
+      <!-- Results Container -->
+      <div class="results-container" id="resultsContainer">
+        <div class="results-header">
+          <h2>Search Results</h2>
+          <div class="results-tabs">
+            <button class="tab-btn active" data-tab="images">
+              Similar Images
+            </button>
+            <button class="tab-btn" data-tab="metrics">Metrics</button>
+            <button class="tab-btn" data-tab="charts">Charts</button>
+          </div>
+          <button class="btn btn-secondary" onclick="downloadResults()">
+            Download Results
+          </button>
+        </div>
+
+        <!-- Images Tab -->
+        <div id="imagesTab" class="tab-content">
+          <div class="image-grid" id="imageGrid">
+            <!-- Results will be populated here -->
+          </div>
+        </div>
+
+        <!-- Metrics Tab -->
+        <div id="metricsTab" class="tab-content hidden">
+          <div class="card">
             <div class="card-header">
-                <h1 class="card-title">Multimedia Search Engine with CNN & Vision Transformers</h1>
-                <p class="card-subtitle">Advanced image similarity search using deep learning descriptors</p>
+              <h3 class="card-title">Performance Metrics</h3>
             </div>
-            <div class="developer-info">
-                <p><strong>Developers:</strong> Duarte Santos & Mark Omelyanenko</p>
-                <p><strong>Project:</strong> Multimedia Indexing/Search with CNN and Vision Transformers</p>
-                <p><strong>Description:</strong> This application provides state-of-the-art image similarity search using multiple deep learning models including MobileNet, ResNet50, and Vision Transformers (ViT_16). Upload a query image to find the most similar images from our indexed database.</p>
+            <div id="metricsContent">
+              <!-- Metrics will be populated here -->
             </div>
+          </div>
         </div>
 
-        <!-- Search Configuration -->
-        <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Search Configuration</h2>
-                <p class="card-subtitle">Configure your search parameters</p>
-            </div>
-
-            <form action="{{ url_for('main.search') }}" method="POST" enctype="multipart/form-data">
-                <!-- Model Selection -->
-                <div class="form-group">
-                    <label class="form-label">Select Models (Choose up to 4)</label>
-                    <div class="model-grid">
-                        <div class="model-card" data-model="mobilenet">
-                            <div class="model-name">MobileNet</div>
-                            <div class="model-description">Lightweight CNN for mobile devices</div>
-                            <input type="checkbox" name="models" value="mobilenet" style="display: none;">
-                        </div>
-                        <div class="model-card" data-model="resnet50">
-                            <div class="model-name">ResNet50</div>
-                            <div class="model-description">Deep residual network with 50 layers</div>
-                            <input type="checkbox" name="models" value="resnet50" style="display: none;">
-                        </div>
-                        <div class="model-card" data-model="vit_16">
-                            <div class="model-name">ViT-16</div>
-                            <div class="model-description">Vision Transformer with 16x16 patches</div>
-                            <input type="checkbox" name="models" value="vit_16" style="display: none;">
-                        </div>
-                        <div class="model-card" data-model="vgg16">
-                            <div class="model-name">VGG16</div>
-                            <div class="model-description">Classic CNN architecture with 16 layers</div>
-                            <input type="checkbox" name="models" value="vgg16" style="display: none;">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Similarity Method -->
-                <div class="form-group">
-                    <label for="similarity_method" class="form-label">Similarity Calculation Method</label>
-                    <select name="similarity_method" id="similarity_method" class="form-select">
-                        <option value="euclidean">Euclidean Distance</option>
-                        <option value="chi2">Chi-square</option>
-                        <option value="bhatta">Bhattacharyya</option>
-                    </select>
-                </div>
-
-                <!-- Results Count -->
-                <div class="form-group">
-                    <label for="results_count" class="form-label">Number of Results</label>
-                    <select name="results_count" id="results_count" class="form-select">
-                        <option value="20">Top 20</option>
-                        <option value="50">Top 50</option>
-                    </select>
-                </div>
-
-                <!-- File Upload -->
-                <div class="form-group">
-                    <label class="form-label">Chose Query Image (from 0 to 999)</label>
-                    <input type="number" id="queryImage" name="query_image" class="form-input" 
-                            placeholder="Enter your image number" required>
-                    <div id="filePreview" class="mt-2 hidden">
-                        <img id="previewImage" style="max-width: 200px; max-height: 200px; border-radius: 0.5rem;">
-                        <p id="fileName" class="mt-1"></p>
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Search Similar Images</button>
-            </form>
+        <!-- Charts Tab -->
+        <div id="chartsTab" class="tab-content hidden">
+          <div class="chart-container">
+            <h3>Precision-Recall Curve</h3>
+            <canvas id="prChart" width="800" height="400"></canvas>
+          </div>
         </div>
-
-        <!-- Loading Indicator -->
-        <div class="loading" id="loadingIndicator">
-            <div class="spinner"></div>
-            <p>Processing your query...</p>
-        </div>
-
-        <!-- Results Container -->
-        <div class="results-container" id="resultsContainer">
-            <div class="results-header">
-                <h2>Search Results</h2>
-                <div class="results-tabs">
-                    <button class="tab-btn active" data-tab="images">Similar Images</button>
-                    <button class="tab-btn" data-tab="metrics">Metrics</button>
-                    <button class="tab-btn" data-tab="charts">Charts</button>
-                </div>
-                <button class="btn btn-secondary" onclick="downloadResults()">Download Results</button>
-            </div>
-
-            <!-- Images Tab -->
-            <div id="imagesTab" class="tab-content">
-                <div class="image-grid" id="imageGrid">
-                    <!-- Results will be populated here -->
-                </div>
-            </div>
-
-            <!-- Metrics Tab -->
-            <div id="metricsTab" class="tab-content hidden">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Performance Metrics</h3>
-                    </div>
-                    <div id="metricsContent">
-                        <!-- Metrics will be populated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Charts Tab -->
-            <div id="chartsTab" class="tab-content hidden">
-                <div class="chart-container">
-                    <h3>Precision-Recall Curve</h3>
-                    <canvas id="prChart" width="800" height="400"></canvas>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
 
     <script>
-        // Model selection logic
-        const modelCards = document.querySelectorAll('.model-card');
-        const maxModels = 4;
-        let selectedModels = [];
+      // Model selection logic
+      const modelCards = document.querySelectorAll(".model-card");
+      const maxModels = 4;
+      let selectedModels = [];
 
-        modelCards.forEach(card => {
-            card.addEventListener('click', function() {
-                const model = this.dataset.model;
-                const checkbox = this.querySelector('input[type="checkbox"]');
-                
-                if (this.classList.contains('selected')) {
-                    // Deselect
-                    this.classList.remove('selected');
-                    checkbox.checked = false;
-                    selectedModels = selectedModels.filter(m => m !== model);
-                } else if (selectedModels.length < maxModels) {
-                    // Select
-                    this.classList.add('selected');
-                    checkbox.checked = true;
-                    selectedModels.push(model);
-                } else {
-                    alert(`You can select maximum ${maxModels} models`);
-                }
-            });
+      modelCards.forEach((card) => {
+        card.addEventListener("click", function () {
+          const model = this.dataset.model;
+          const checkbox = this.querySelector('input[type="checkbox"]');
+
+          if (this.classList.contains("selected")) {
+            // Deselect
+            this.classList.remove("selected");
+            checkbox.checked = false;
+            selectedModels = selectedModels.filter((m) => m !== model);
+          } else if (selectedModels.length < maxModels) {
+            // Select
+            this.classList.add("selected");
+            checkbox.checked = true;
+            selectedModels.push(model);
+          } else {
+            alert(`You can select maximum ${maxModels} models`);
+          }
         });
+      });
 
-        // File upload logic
-        const fileUpload = document.getElementById('fileUpload');
-        const queryImage = document.getElementById('queryImage');
-        const filePreview = document.getElementById('filePreview');
-        const previewImage = document.getElementById('previewImage');
-        const fileName = document.getElementById('fileName');
+      // File upload logic
+      const fileUpload = document.getElementById("fileUpload");
+      const queryImage = document.getElementById("queryImage");
+      const filePreview = document.getElementById("filePreview");
+      const previewImage = document.getElementById("previewImage");
+      const fileName = document.getElementById("fileName");
 
-        fileUpload.addEventListener('click', () => queryImage.click());
-        fileUpload.addEventListener('dragover', (e) => {
+      fileUpload.addEventListener("click", () => queryImage.click());
+      fileUpload.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        fileUpload.classList.add("dragover");
+      });
+      fileUpload.addEventListener("dragleave", () => {
+        fileUpload.classList.remove("dragover");
+      });
+      fileUpload.addEventListener("drop", (e) => {
+        e.preventDefault();
+        fileUpload.classList.remove("dragover");
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+          handleFile(files[0]);
+        }
+      });
+
+      queryImage.addEventListener("change", (e) => {
+        if (e.target.files.length > 0) {
+          handleFile(e.target.files[0]);
+        }
+      });
+
+      function handleFile(file) {
+        if (file.type.startsWith("image/")) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            previewImage.src = e.target.result;
+            fileName.textContent = file.name;
+            filePreview.classList.remove("hidden");
+          };
+          reader.readAsDataURL(file);
+        } else {
+          alert("Please select an image file");
+        }
+      }
+
+      // Form submission
+      document
+        .getElementById("searchForm")
+        .addEventListener("submit", function (e) {
+          if (selectedModels.length === 0) {
             e.preventDefault();
-            fileUpload.classList.add('dragover');
-        });
-        fileUpload.addEventListener('dragleave', () => {
-            fileUpload.classList.remove('dragover');
-        });
-        fileUpload.addEventListener('drop', (e) => {
+            alert("Please select at least one model");
+            return;
+          }
+          if (!queryImage.files.length) {
             e.preventDefault();
-            fileUpload.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                handleFile(files[0]);
-            }
+            alert("Please upload a query image");
+            return;
+          }
+
+          document.getElementById("loadingIndicator").style.display = "block";
         });
 
-        queryImage.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                handleFile(e.target.files[0]);
-            }
-        });
+      // Tab switching
+      const tabBtns = document.querySelectorAll(".tab-btn");
+      const tabContents = document.querySelectorAll(".tab-content");
 
-        function handleFile(file) {
-            if (file.type.startsWith('image/')) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    previewImage.src = e.target.result;
-                    fileName.textContent = file.name;
-                    filePreview.classList.remove('hidden');
-                };
-                reader.readAsDataURL(file);
+      tabBtns.forEach((btn) => {
+        btn.addEventListener("click", function () {
+          const tab = this.dataset.tab;
+
+          // Update active tab button
+          tabBtns.forEach((b) => b.classList.remove("active"));
+          this.classList.add("active");
+
+          // Show corresponding content
+          tabContents.forEach((content) => {
+            if (content.id === tab + "Tab") {
+              content.classList.remove("hidden");
             } else {
-                alert('Please select an image file');
+              content.classList.add("hidden");
             }
-        }
-
-        // Form submission
-        document.getElementById('searchForm').addEventListener('submit', function(e) {
-            if (selectedModels.length === 0) {
-                e.preventDefault();
-                alert('Please select at least one model');
-                return;
-            }
-            if (!queryImage.files.length) {
-                e.preventDefault();
-                alert('Please upload a query image');
-                return;
-            }
-            
-            document.getElementById('loadingIndicator').style.display = 'block';
+          });
         });
+      });
 
-        // Tab switching
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
+      // Download results function
+      function downloadResults() {
+        // Implement download functionality
+        alert("Download functionality will be implemented");
+      }
 
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const tab = this.dataset.tab;
-                
-                // Update active tab button
-                tabBtns.forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Show corresponding content
-                tabContents.forEach(content => {
-                    if (content.id === tab + 'Tab') {
-                        content.classList.remove('hidden');
-                    } else {
-                        content.classList.add('hidden');
-                    }
-                });
-            });
-        });
+      // Handle search results (to be called from Flask)
+      function displayResults(results) {
+        document.getElementById("loadingIndicator").style.display = "none";
+        document.getElementById("resultsContainer").style.display = "block";
 
-        // Download results function
-        function downloadResults() {
-            // Implement download functionality
-            alert('Download functionality will be implemented');
-        }
+        // Populate image grid
+        const imageGrid = document.getElementById("imageGrid");
+        imageGrid.innerHTML = "";
 
-        // Handle search results (to be called from Flask)
-        function displayResults(results) {
-            document.getElementById('loadingIndicator').style.display = 'none';
-            document.getElementById('resultsContainer').style.display = 'block';
-            
-            // Populate image grid
-            const imageGrid = document.getElementById('imageGrid');
-            imageGrid.innerHTML = '';
-            
-            results.images.forEach((image, index) => {
-                const imageResult = document.createElement('div');
-                imageResult.className = 'image-result';
-                imageResult.innerHTML = `
-                    <img src="${image.url}" alt="Result ${index + 1}" class="result-image">
+        results.images.forEach((image, index) => {
+          const imageResult = document.createElement("div");
+          imageResult.className = "image-result";
+          imageResult.innerHTML = `
+                    <img src="${image.url}" alt="Result ${
+            index + 1
+          }" class="result-image">
                     <div class="result-info">
-                        <div class="similarity-score">Similarity: ${image.score.toFixed(4)}</div>
+                        <div class="similarity-score">Similarity: ${image.score.toFixed(
+                          4
+                        )}</div>
                         <div class="mt-1">Rank: ${index + 1}</div>
                     </div>
                 `;
-                imageGrid.appendChild(imageResult);
-            });
-            
-            // Populate metrics
-            const metricsContent = document.getElementById('metricsContent');
-            metricsContent.innerHTML = `
+          imageGrid.appendChild(imageResult);
+        });
+
+        // Populate metrics
+        const metricsContent = document.getElementById("metricsContent");
+        metricsContent.innerHTML = `
                 <div class="flex justify-between mb-2">
                     <span>Precision:</span>
-                    <span class="font-weight-600">${results.metrics.precision.toFixed(4)}</span>
+                    <span class="font-weight-600">${results.metrics.precision.toFixed(
+                      4
+                    )}</span>
                 </div>
                 <div class="flex justify-between mb-2">
                     <span>Recall:</span>
-                    <span class="font-weight-600">${results.metrics.recall.toFixed(4)}</span>
+                    <span class="font-weight-600">${results.metrics.recall.toFixed(
+                      4
+                    )}</span>
                 </div>
                 <div class="flex justify-between mb-2">
                     <span>Average Precision (AP):</span>
-                    <span class="font-weight-600">${results.metrics.ap.toFixed(4)}</span>
+                    <span class="font-weight-600">${results.metrics.ap.toFixed(
+                      4
+                    )}</span>
                 </div>
                 <div class="flex justify-between">
                     <span>Mean Average Precision (mAP):</span>
-                    <span class="font-weight-600">${results.metrics.map.toFixed(4)}</span>
+                    <span class="font-weight-600">${results.metrics.map.toFixed(
+                      4
+                    )}</span>
                 </div>
             `;
-        }
+      }
     </script>
-</body>
+  </body>
 </html>
