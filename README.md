@@ -12,7 +12,7 @@ A content-based image retrieval (CBIR) system that allows users to search for im
 
 ## 📷 Example Use Case
 
-Upload a query image, select the model and similarity metric, and view the most similar images retrieved from the dataset along with evaluation metrics.
+Type a query image ID, select the model(s) and similarity metric, and view the most similar images retrieved from the dataset along with evaluation metrics.
 
 ## 🛠️ Tech Stack
 
