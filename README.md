@@ -20,6 +20,3 @@ Type a query image ID, select the model(s) and similarity metric, and view the m
 - **Frontend:** HTML, CSS (custom + Tailwind-style), JavaScript
 - **Image Processing:** OpenCV, NumPy, PIL
 - **Data Visualization:** Matplotlib
-
-## 📂 Project Structure
-
