@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search History - Multimedia Search Engine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/results.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">ImageSearch</a>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('main.index') }}">Dashboard</a></li>
+                <li><a href="{{ url_for('main.results') }}">Results</a></li>
+            </ul>
+            <div class="user-menu">
+                <span>Welcome, {{ session.get('username', 'User') }}</span>
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Search History Content -->
+        {% if search_history %}
+            <!-- Carousel Container -->
+            <div class="carousel-container">
+                <div class="carousel-wrapper">
+                    <div class="carousel-track" id="carousel-track">
+                        {% for search in search_history %}
+                        <div class="carousel-slide">
+                            <div class="card">
+                                <div class="search-card">
+                                    <div class="search-grid">
+                                        <!-- Search Information -->
+                                        <div class="search-info">
+                                            <div class="search-header">
+                                                <div class="search-id">Search #{{ search.nr }}</div>
+                                                <div class="search-timestamp">
+                                                    {{ search.timestamp.strftime('%B %d, %Y at %I:%M %p') }}
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="search-details">
+                                                <div class="detail-item">
+                                                    <div class="detail-label">Query Image</div>
+                                                    <div class="query-image-container">
+                                                        {% if search.query_image_id %}
+                                                            {% set query_image_filename = 'image.orig/' ~ search.query_image_id ~ '.jpg' %}
+                                                            <img src="{{ url_for('static', filename=query_image_filename) }}" 
+                                                                alt="Query image" 
+                                                                class="query-image"
+                                                                onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                                        {% else %}
+                                                            <div style="width: 60px; height: 60px; background: var(--bg-secondary); border: 2px dashed var(--border-color); border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 0.75rem;">No Image</div>
+                                                        {% endif %}
+                                                        <div class="query-image-info">
+                                                            <div class="query-image-id">{{ search.query_image_id }}</div>
+                                                            <div class="query-image-path">image.orig/{{ search.query_image_id }}.jpg</div>
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+                                                
+                                                <div class="detail-item">
+                                                    <div class="detail-label">Model Keys</div>
+                                                    <div class="detail-value">{{ search.model_keys }}</div>
+                                                </div>
+                                                
+                                                <div class="detail-item">
+                                                    <div class="detail-label">Similarity Metric</div>
+                                                    <div class="detail-value">{{ search.similarity_metric }}</div>
+                                                </div>
+                                                
+                                                {% if search.metrics %}
+                                                <div class="detail-item">
+                                                    <div class="detail-label">Performance Metrics</div>
+                                                    <div class="metrics-grid">
+                                                        {% for key, value in search.metrics.items() %}
+                                                        <div class="metric-item">
+                                                            <span class="metric-value">{{ "%.3f"|format(value) if value is number else value }}</span>
+                                                            {{ key.replace('_', ' ').title() }}
+                                                        </div>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        
+                                        <!-- Search Visualization -->
+                                        <div class="search-visual">
+                                            <div class="plot-container">
+                                                {% if search.plot_path %}
+                                                    <img src="{{ url_for('static', filename=search.plot_path) }}" 
+                                                        alt="Search Results Plot">
+                                                {% else %}
+                                                    <div class="plot-placeholder">
+                                                        📊 Visualization Plot
+                                                    </div>
+                                                {% endif %}
+                                                <div class="plot-path">
+                                                    {{ search.plot_path }}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Retrieved Images Grid -->
+                                    <div class="retrieved-images-section">
+                                        <div class="detail-label">Retrieved Images ({{ search.retrieved_paths.split(',') | length }} results)</div>
+                                        <div class="images-grid">
+                                            {% for path in search.retrieved_paths.split(',') %}
+                                            {% set clean_path = path.strip().replace('"', '').replace("'", '').replace('[', '').replace(']', '') %}
+                                            {% if clean_path %}
+                                            <div class="image-item">
+                                                <img src="{{ url_for('static', filename=clean_path) }}" 
+                                                    alt="Retrieved image {{ loop.index }}" 
+                                                    class="retrieved-image"
+                                                    loading="lazy">
+                                                <div class="image-rank">{{ loop.index }}</div>
+                                            </div>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Carousel Controls -->
+                <div class="carousel-controls">
+                    <button class="carousel-btn" id="prev-btn">‹</button>
+                    <div class="carousel-indicators" id="indicators"></div>
+                    <div class="carousel-counter">
+                        <span id="current-slide">1</span> / <span id="total-slides">{{ search_history | length }}</span>
+                    </div>
+                    <button class="carousel-btn" id="next-btn">›</button>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty State -->
+            <div class="empty-state">
+                <h2 class="empty-title">No Search History</h2>
+                <p class="empty-subtitle">You haven't performed any searches yet. Start exploring!</p>
+                <a href="{{ url_for('main.index') }}" class="btn btn-primary">Start Searching</a>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        // Carousel Functionality
+        class Carousel {
+            constructor() {
+                this.track = document.getElementById('carousel-track');
+                this.prevBtn = document.getElementById('prev-btn');
+                this.nextBtn = document.getElementById('next-btn');
+                this.indicators = document.getElementById('indicators');
+                this.currentSlideSpan = document.getElementById('current-slide');
+                this.totalSlidesSpan = document.getElementById('total-slides');
+                
+                this.slides = document.querySelectorAll('.carousel-slide');
+                this.currentIndex = 0;
+                this.totalSlides = this.slides.length;
+                
+                this.init();
+            }
+            
+            init() {
+                if (this.totalSlides === 0) return;
+                
+                this.createIndicators();
+                this.updateCarousel();
+                this.bindEvents();
+            }
+            
+            createIndicators() {
+                for (let i = 0; i < this.totalSlides; i++) {
+                    const indicator = document.createElement('div');
+                    indicator.className = 'indicator';
+                    indicator.addEventListener('click', () => this.goToSlide(i));
+                    this.indicators.appendChild(indicator);
+                }
+            }
+            
+            bindEvents() {
+                this.prevBtn.addEventListener('click', () => this.prevSlide());
+                this.nextBtn.addEventListener('click', () => this.nextSlide());
+                
+                // Keyboard navigation
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'ArrowLeft') this.prevSlide();
+                    if (e.key === 'ArrowRight') this.nextSlide();
+                });
+                
+                // Touch/swipe support
+                let startX = 0;
+                let endX = 0;
+                
+                this.track.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].clientX;
+                });
+                
+                this.track.addEventListener('touchend', (e) => {
+                    endX = e.changedTouches[0].clientX;
+                    const diff = startX - endX;
+                    
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            this.nextSlide();
+                        } else {
+                            this.prevSlide();
+                        }
+                    }
+                });
+            }
+            
+            updateCarousel() {
+                // Update track position
+                const translateX = -this.currentIndex * 100;
+                this.track.style.transform = `translateX(${translateX}%)`;
+                
+                // Update indicators
+                document.querySelectorAll('.indicator').forEach((indicator, index) => {
+                    indicator.classList.toggle('active', index === this.currentIndex);
+                });
+                
+                // Update counter
+                this.currentSlideSpan.textContent = this.currentIndex + 1;
+                
+                // Update button states
+                this.prevBtn.disabled = this.currentIndex === 0;
+                this.nextBtn.disabled = this.currentIndex === this.totalSlides - 1;
+            }
+            
+            goToSlide(index) {
+                this.currentIndex = Math.max(0, Math.min(index, this.totalSlides - 1));
+                this.updateCarousel();
+            }
+            
+            nextSlide() {
+                if (this.currentIndex < this.totalSlides - 1) {
+                    this.currentIndex++;
+                    this.updateCarousel();
+                }
+            }
+            
+            prevSlide() {
+                if (this.currentIndex > 0) {
+                    this.currentIndex--;
+                    this.updateCarousel();
+                }
+            }
+        }
+        
+        // Initialize carousel when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            new Carousel();
+        });
+    </script>
+</body>
+</html>

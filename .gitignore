@@ -1,0 +1,6 @@
+.env
+static/plots/*.png
+search_core/metrics/*
+search_core/results/*
+certbot/*
+certbot
