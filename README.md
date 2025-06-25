@@ -6,7 +6,7 @@ A content-based image retrieval (CBIR) system that allows users to search for im
 
 - 🔍 Search by image using different deep learning models
 - 📊 Visualize retrieval results and performance metrics
-- 🧠 Support for multiple similarity metrics (e.g., cosine, chi-squared)
+- 🧠 Support for multiple similarity metrics (euclidean, chi-squared, bhattacharyya)
 - 📁 Saved search history with images and timestamps
 - 👤 User authentication and session management
 
